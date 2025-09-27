@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>i'm Vinzz</title>
+  <style>
+    :root{--bg:#0f172a;--card:#0b1220;--accent:#7c3aed;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;background:linear-gradient(180deg,#071029 0%,#07122a 100%);color:#e6eef8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+    .card{width:100%;max-width:820px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:22px;box-shadow:0 6px 24px rgba(2,6,23,0.6)}
+    h1{margin:0 0 6px;font-size:20px}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input, select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit;margin-bottom:12px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .full{grid-column:1/-1}
+    button{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:white;font-weight:600;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+    pre{background:#021027;padding:12px;border-radius:8px;overflow:auto;font-size:13px;white-space:pre-wrap}
+    .result{margin-top:12px}
+    .toggle-row{display:flex;align-items:center;gap:10px}
+    .warning{color:#ffcc00;font-size:13px}
+    .small{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Create Panel</h1>
+    <p class="lead">Create Panel Via Web By VinzzOfficial</p>
+
+    <div class="grid">
+      <div>
+        <label>Username</label>
+        <input id="username" type="text" placeholder="username">
+      </div>
+      <div>
+        <label>RAM (MB)</label>
+        <input id="ram" type="number" placeholder="contoh: 1024">
+      </div>
+
+      <div class="full">
+        <label>Admin Panel</label>
+        <div class="toggle-row">
+          <input id="rootAdmin" type="checkbox" />
+          <div>
+            <div class="small">Centang Apa Bila Ingin Crate Admin Panel atau yang di sebut adp</div>
+            <div id="rootWarning" class="warning" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="full" style="display:flex;gap:10px;align-items:center">
+      <button id="submit">Create Panel</button>
+      <button id="logout" style="background:#dc2626;">Logout</button>
+      <div class="muted">Status: <span id="status">idle</span></div>
+    </div>
+
+    <pre id="output" class="result"></pre>
+  </main>
+
+<script>
+document.getElementById('logout').addEventListener('click', () => {
+  localStorage.removeItem('loggedInUser');
+  window.location.href = "index.html";
+});
+
+async function createUserAndServer() {
+  const username = document.getElementById('username').value.trim();
+  const ramInput = document.getElementById('ram').value.trim();
+  const rootAdminChecked = document.getElementById('rootAdmin').checked;
+  const statusEl = document.getElementById('status');
+  const out = document.getElementById('output');
+
+  if (!username || !ramInput) {
+    out.textContent = '❌ Semua field harus diisi.';
+    return;
+  }
+
+  const ram = parseInt(ramInput);
+  if (isNaN(ram) || ram <= 0) {
+    out.textContent = '❌ RAM harus angka positif.';
+    return;
+  }
+  
+  // Optional safety prompt (browser alert) to confirm root admin if checked
+  if (rootAdminChecked) {
+    const confirmRoot = confirm("Root admin = TRUE. Ini memberikan hak penuh. Lanjutkan?");
+    if (!confirmRoot) {
+      out.textContent = '⚠️ Pembuatan dibatalkan oleh pengguna (root admin).';
+      return;
+    }
+  }
+
+  statusEl.textContent = 'Membuat user...';
+  out.textContent = '';
+
+  const LINK_LOG = "https://ekkysukatobrut.storedigital.web.id";
+  try {
+    // === 1. BUAT USER ===
+    const userPayload = {
+      email: `${username}@vinzzofficial.com`,
+      username: username,
+      first_name: username,
+      last_name: username,
+      language: "en",
+      password: `${username}011`,
+      // Pastikan ini boolean (true/false), bukan string
+      root_admin: rootAdminChecked
+    };
+
+    const userRes = await fetch(`${API_BASE}/users`, {
+      method: 'POST',
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify(userPayload)
+    });
+
+    const userData = await userRes.json();
+
+    if (!userRes.ok) {
+      console.error("HTTP Status:", userRes.status);
+      out.textContent = "❌ User error ("+userRes.status+"): " + JSON.stringify(userData, null, 2);
+      statusEl.textContent = '❌ Error';
+      return;
+    }
+
+    const userId = userData.attributes.id;
+
+    // === 2. AMBIL STARTUP EGG ===
+    const eggRes = await fetch(`${API_BASE}/nests/5/eggs/15`, {
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${API_KEY}`
+      }
+    });
+
+    const eggData = await eggRes.json();
+    if (!eggRes.ok) {
+      out.textContent = "❌ Egg error: " + JSON.stringify(eggData, null, 2);
+      statusEl.textContent = '❌ Error';
+      return;
+    }
+    const startup_cmd = eggData.attributes.startup;
+
+    statusEl.textContent = 'Membuat server...';
+
+    // === 3. BUAT SERVER ===
+  const serverPayload = {
+  name: username,
+  user: userId,
+  egg: 15,
+  docker_image: "ghcr.io/parkervcp/yolks:nodejs_18",
+  startup: startup_cmd,
+  environment: {
+    INST: "npm",
+    USER_UPLOAD: "0",
+    AUTO_UPDATE: "0",
+    CMD_RUN: "npm start"
+  },
+  limits: { memory: ram, swap: 0, disk: ram, io: 500, cpu: 150 },
+  feature_limits: { databases: 5, backups: 5, allocations: 1 },
+
+  // ✅ WAJIB ADA: allocation.id
+  deploy: {
+  locations: [parseInt(1)],
+  dedicated_ip: false,
+  port_range: [],
+  },
+};
+
+    const serverRes = await fetch(`${API_BASE}/servers`, {
+      method: 'POST',
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify(serverPayload)
+    });
+
+    const serverData = await serverRes.json();
+    if (!serverRes.ok) {
+      out.textContent = "❌ Server error: " + JSON.stringify(serverData, null, 2);
+      statusEl.textContent = '❌ Error';
+      return;
+    }
+
+    const SuccesFuly = {
+      user : `${username}`,
+      paswort : `${username}011`,
+      Linklog : `${LINK_LOG}`,
+      root_admin: rootAdminChecked
+    };
+
+    statusEl.textContent = '✅ Berhasil!';
+    out.textContent = JSON.stringify(SuccesFuly, null, 2);
+
+  } catch (error) {
+    statusEl.textContent = '❌ Error';
+    out.textContent = error.message;
+  }
+}
+
+document.getElementById('submit').addEventListener('click', createUserAndServer);
+
+// tampilkan/sembunyikan peringatan ketika toggle Root Admin berubah
+document.getElementById('rootAdmin').addEventListener('change', function() {
+  document.getElementById('rootWarning').style.display = this.checked ? 'block' : 'none';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Register | Vinzz Panel</title>
+  <style>
+    :root{--bg:#0f172a;--card:#0b1220;--accent:#7c3aed;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;background:linear-gradient(180deg,#071029 0%,#07122a 100%);color:#e6eef8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+    .card{width:100%;max-width:420px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:22px;box-shadow:0 6px 24px rgba(2,6,23,0.6)}
+    h1{margin:0 0 10px;font-size:22px;text-align:center}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit;margin-bottom:12px}
+    button{width:100%;background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:white;font-weight:600;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px;text-align:center;margin-top:8px}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Daftar Akun</h1>
+    <label>Username</label>
+    <input id="reg-username" type="text" placeholder="Masukkan username">
+
+    <label>Password</label>
+    <input id="reg-password" type="password" placeholder="Masukkan password">
+
+    <button id="reg-btn">Daftar</button>
+    <div id="reg-status" class="muted"></div>
+    <p class="muted">Sudah punya akun? <a href="index.html" style="color:#7c3aed;text-decoration:none;">Login di sini</a></p>
+  </main>
+
+  <script>
+    document.getElementById('reg-btn').addEventListener('click', () => {
+      const username = document.getElementById('reg-username').value.trim();
+      const password = document.getElementById('reg-password').value.trim();
+      const status = document.getElementById('reg-status');
+
+      if (!username || !password) {
+        status.textContent = "❌ Username dan password wajib diisi!";
+        return;
+      }
+
+      // Ambil semua user yang sudah ada
+      let users = JSON.parse(localStorage.getItem('users') || "[]");
+
+      // Cek apakah username sudah dipakai
+      if (users.find(u => u.username === username)) {
+        status.textContent = "❌ Username sudah dipakai!";
+        return;
+      }
+
+      // Simpan user baru
+      users.push({ username, password });
+      localStorage.setItem('users', JSON.stringify(users));
+
+      status.textContent = "✅ Berhasil daftar! Mengalihkan ke login...";
+      setTimeout(() => window.location.href = "index.html", 1500);
+    });
+  </script>
+</body>
+</html>

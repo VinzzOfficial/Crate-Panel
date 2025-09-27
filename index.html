@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login | Vinzz Panel</title>
+  <style>
+    :root{--card:#0b1220;--accent:#7c3aed;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;
+      background:linear-gradient(180deg,#071029 0%,#07122a 100%);
+      color:#e6eef8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+    .card{width:100%;max-width:400px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+      border-radius:12px;padding:22px;box-shadow:0 6px 24px rgba(2,6,23,0.6)}
+    h1{margin:0 0 6px;font-size:20px}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);
+      background:var(--glass);color:inherit;margin-bottom:12px}
+    button{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;
+      color:white;font-weight:600;cursor:pointer;width:100%}
+    .muted{color:var(--muted);font-size:13px;text-align:center;margin-top:8px}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Login</h1>
+    <p class="lead">Masukkan username & password untuk melanjutkan.</p>
+    <label>Username</label>
+    <input id="login-username" type="text" placeholder="Username">
+    <label>Password</label>
+    <input id="login-password" type="password" placeholder="Password">
+    <button id="login-btn">Login</button>
+    <div id="login-status" class="muted"></div>
+  </main>
+
+<script>
+function registerDummy(){
+  let users = JSON.parse(localStorage.getItem("users") || "[]");
+  users.push({username: "demo", password: "demo123"});
+  localStorage.setItem("users", JSON.stringify(users));
+  alert("✅ Akun demo dibuat!\nUsername: demo\nPassword: demo123");
+}
+
+document.getElementById('login-btn').addEventListener('click', () => {
+  const user = document.getElementById('login-username').value.trim();
+  const pass = document.getElementById('login-password').value.trim();
+  const status = document.getElementById('login-status');
+
+  // --- 🔑 Sandi khusus (bypass user login biasa) ---
+  const specialPassword = "vinzzofficial"; // ganti dengan password khusus
+  if (pass === specialPassword) {
+    window.location.href = "adp.html"; // halaman rahasia
+    return;
+  }
+  
+  const specialPasword = "vinzzoffc"; // ganti dengan password khusus
+  if (pass === specialPasword) {
+    window.location.href = "panel.html"; // halaman rahasia
+    return;
+  }
+  
+  // --- Cek login user biasa ---
+  let users = JSON.parse(localStorage.getItem('users') || "[]");
+  let found = users.find(u => u.username === user && u.password === pass);
+
+  if (found) {
+    localStorage.setItem('loggedInUser', user);
+    window.location.href = "panel.html"; // masuk ke panel
+  } else {
+    status.textContent = "❌ Username atau password salah!";
+  }
+});
+
+// AUTO LOGIN
+window.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('loggedInUser')) {
+    window.location.href = "panel.html";
+  }
+});
+</script>
+</body>
+</html>
